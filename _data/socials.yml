@@ -5,4 +5,4 @@ cv_pdf: /assets/pdf/cole-pearson-CV.pdf # path to your CV PDF file
 email: colepearson04@gmail.com # your email address
 rss_icon: true # comment this line to hide the RSS icon
 linkedin: cole-pearson-chemistry
-orcid: 0009-0002-9286-5062
+#orcid: 0009-0002-9286-5062
