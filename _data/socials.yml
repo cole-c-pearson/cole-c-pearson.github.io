@@ -1,17 +1,9 @@
 # this file contains the social media links and usernames of the author
 # the socials will be displayed in the order they are defined here
 # for more information, please refer to the documentation of jekyll-socials plugin: https://github.com/george-gca/jekyll-socials
-# Use 'url' and 'logo' for cv_pdf so the plugin can "split" the logo filename
-cv_pdf:
-  url: /assets/pdf/cole-pearson-CV.pdf
-  logo: cv.pdf
+cv_pdf: /assets/pdf/cole-pearson-CV.pdf
 email: colepearson04@gmail.com
-# For RSS, it's often safer to use the full URL or a logo path
-rss_icon:
-  url: /feed.xml
-  logo: rss.xml
-linkedin: cole-pearson-chemistry
-github: cole-c-pearson
-email: colepearson04@gmail.com # your email address
-linkedin: cole-pearson-chemistry
-#orcid: 0009-0002-9286-5062
+rss_icon: true
+linkedin_username: cole-pearson-chemistry
+github_username: cole-c-pearson
+orcid_id: 0009-0002-9286-5062
