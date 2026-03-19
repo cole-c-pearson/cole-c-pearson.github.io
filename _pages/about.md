@@ -6,7 +6,7 @@ subtitle: B.S. Chemistry · Shippensburg University · Class of 2026
 
 profile:
   align: right
-  image: prof_pic.jpeg
+  image: prof_pic.jpg
   image_circular: false # crops the image to make it circular
   more_info: >
     <p>Shippensburg University</p>
