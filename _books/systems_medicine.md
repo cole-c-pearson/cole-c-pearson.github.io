@@ -8,7 +8,7 @@ isbn: 978-1000960679 # use ISBN to fetch cover (if no `olid` is provided, dashes
 categories: science biology medicine mathematics circuits accessible
 tags:
 buy_link: https://www.amazon.com/Systems-Medicine-Physiological-Circuits-Computational-ebook/dp/B0CRDWCC9K
-date:
+date: 2026-04-04
 started: 2026-04-04
 finished:
 released: 2023
