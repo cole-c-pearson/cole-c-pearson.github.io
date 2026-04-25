@@ -376,8 +376,8 @@ ninja.data = [{
           description: "",
           section: "Books",handler: () => {
               window.location.href = "/books/systems_medicine/";
-            },},{id: "books-",
-          title: '',
+            },},{id: "books-wild-swans-three-daughters-of-china",
+          title: 'Wild Swans: Three Daughters of China',
           description: "",
           section: "Books",handler: () => {
               window.location.href = "/books/wild_swans/";
