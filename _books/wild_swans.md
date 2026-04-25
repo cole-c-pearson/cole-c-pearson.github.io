@@ -1,6 +1,6 @@
 ---
 layout: book-review
-title: Wild Swans: Three Daughters of China
+title: "Wild Swans: Three Daughters of China"
 author: Jung Chang
 cover: assets/img/book_covers/wild_swans.jpg
 olid: OL33918487M # use Open Library ID to fetch cover (if no `cover` is provided)
