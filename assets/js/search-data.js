@@ -468,7 +468,7 @@ ninja.data = [{
         title: 'email',
         section: 'Socials',
         handler: () => {
-          window.open("mailto:%63%6F%6C%65%70%65%61%72%73%6F%6E%30%34@%67%6D%61%69%6C.%63%6F%6D", "_blank");
+          window.open("mailto:%66%61%6C%73%65", "_blank");
         },
       },{
         id: 'social-rss',
@@ -489,7 +489,7 @@ ninja.data = [{
         title: 'GitHub',
         section: 'Socials',
         handler: () => {
-          window.open("https://github.com/cole-c-pearson", "_blank");
+          window.open("https://github.com/false", "_blank");
         },
       },{
         id: 'social-orcid',
