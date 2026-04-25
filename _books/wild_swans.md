@@ -11,7 +11,7 @@ buy_link: https://www.thriftbooks.com/w/wild-swans-three-daughters-of-china_jung
 date: 2024-08-23
 started: 2026-01-05
 finished: 2026-04-03
-released: 1969
+released: 1992
 stars: 5
 goodreads_review: 7026426847
 status: Finished
