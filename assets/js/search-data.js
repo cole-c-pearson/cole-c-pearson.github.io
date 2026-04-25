@@ -371,7 +371,12 @@ ninja.data = [{
             window.location.href = "/blog/2015/formatting-and-links/";
           
         },
-      },{id: "books-",
+      },{id: "books-systems-medicine",
+          title: 'Systems Medicine',
+          description: "",
+          section: "Books",handler: () => {
+              window.location.href = "/books/systems_medicine/";
+            },},{id: "books-",
           title: '',
           description: "",
           section: "Books",handler: () => {
