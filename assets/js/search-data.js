@@ -371,16 +371,16 @@ ninja.data = [{
             window.location.href = "/blog/2015/formatting-and-links/";
           
         },
-      },{id: "books-systems-medicine",
-          title: 'Systems Medicine',
-          description: "",
-          section: "Books",handler: () => {
-              window.location.href = "/books/systems_medicine/";
-            },},{id: "books-wild-swans-three-daughters-of-china",
+      },{id: "books-wild-swans-three-daughters-of-china",
           title: 'Wild Swans: Three Daughters of China',
           description: "",
           section: "Books",handler: () => {
               window.location.href = "/books/wild_swans/";
+            },},{id: "books-systems-medicine",
+          title: 'Systems Medicine',
+          description: "",
+          section: "Books",handler: () => {
+              window.location.href = "/books/systems_medicine/";
             },},{id: "news-a-simple-inline-announcement",
           title: 'A simple inline announcement.',
           description: "",
