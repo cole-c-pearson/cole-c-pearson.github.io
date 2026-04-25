@@ -14,7 +14,7 @@ finished:
 released: 2023
 stars:
 goodreads_review: 125381501
-status: Currently reading
+status: Reading
 ---
 
 Review is forthcoming!
