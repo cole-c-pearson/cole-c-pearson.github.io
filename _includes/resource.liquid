@@ -1,0 +1,27 @@
+<!-- _includes/resource.liquid -->
+<!-- Renders one entry in the resources list. Expects a `resource` variable. -->
+<li>
+  <h3>
+    <a class="post-title" href="{{ resource.url | relative_url }}">{{ resource.title }}</a>
+  </h3>
+  {% if resource.description %}
+    <p>{{ resource.description }}</p>
+  {% endif %}
+  <p class="post-meta">
+    {% assign read_time = resource.content | number_of_words | divided_by: 180 | plus: 1 %}
+    {{ read_time }} min read
+    {% assign last_date = resource.last_updated | default: resource.date %}
+    {% if last_date %}
+      &nbsp; &middot; &nbsp; updated {{ last_date | date: '%B %-d, %Y' }}
+    {% endif %}
+  </p>
+  {% assign tags = resource.tags | join: '' %}
+  {% if tags != '' %}
+    <p class="post-tags">
+      {% for tag in resource.tags %}
+        <i class="fa-solid fa-hashtag fa-sm"></i> {{ tag }}
+        {% unless forloop.last %}&nbsp;{% endunless %}
+      {% endfor %}
+    </p>
+  {% endif %}
+</li>
