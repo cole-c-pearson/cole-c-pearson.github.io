@@ -27,7 +27,7 @@ latest_posts:
   limit: 3 # leave blank to include all the blog posts
 ---
 
-My name is Cole Pearson. I am a student–scientist from Shippensburg, Pennsylvania. I will (ideally) graduate with my Bachelor of Science in Chemistry (with a Math minor!) this coming May, 2026. As a scientist and human, I do my best to enjoy whatever it is I'm doing. I also try to do _it_ perfectly, but have thus far failed miserably in that regard >:)
+My name is Cole Pearson. I am a student–scientist from Shippensburg, Pennsylvania. I graduated with my Bachelor of Science in Chemistry (with a Math minor!) in May 2026. As a scientist and human, I do my best to enjoy whatever it is I'm doing. I also try to do _it_ perfectly, but have thus far failed miserably in that regard >:)
 
 My academic interests lie in physical biochemistry, or as a friend put it—"everything". At the fundamental physical and chemical level, biological systems are just extraordinary. How these particles find it in them to get out of bed each morning, coordinate their efforts, scurry around and absorb blasts of energy and shoot those blasts off, get trucked around in some dark fluid, and through all of it—dance together such that they may compose _Sonic hedgehog protein_, which itself is one of a bazillion pieces of an altogether grander ensemble that lives in an even bigger chorus of motion that, in the big blur, managed to find the ability to resolve its lesser pieces and name one of them _Sonic hedgehog protein_. It's just amazing, really.
 
@@ -42,5 +42,3 @@ In summer 2025 I partook in the Department of Energy/American Chemical Society-s
 I am currently engaged in my senior research project, “Development of a Computational Tool for the Analysis of Kombucha Titrations” under the guidance of Drs. Jeb Kegerreis, Luis Melara, and John Richardson at Shippensburg University. I’m combining analytical techniques, mathematical modeling, and thermodynamic theory to develop a new open-source tool that will increase efficiency and accessibility for brewers worldwide.
 
 My favorite trait is earnestness.
-
-Currently reading: _Wild Swans: Three Daughters of China_ by Jung Chang
