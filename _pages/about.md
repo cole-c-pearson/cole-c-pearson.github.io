@@ -31,7 +31,7 @@ My name is Cole Pearson. I am a student–scientist born and raised in Shippensb
 
 My academic interests lie in physical biochemistry, or as a friend put it—"everything". At the fundamental physical and chemical level, biological systems are just extraordinary. How these particles find it in them to mosey out of bed each morning, coordinate their efforts, absorb blasts of energy and shoot other blasts out, get trucked around in some dark fluid, and through all of it—dance together such that they may compose the chorus of motion that is me as I write this, and you as you read this.
 
-More to the point: I am fascinated and motivated by the chance to develop and/or use cutting-edge tools (very broad definition here) to better understand and control these biochemical systems. Then, using those tools to quantitatively expand our theory of these systems' mechanisms of existence... that's the epitome of science!
+More to the point: I am fascinated and motivated by the chance to develop and/or use cutting-edge tools (very broad definition here) to better understand and control these biochemical systems. Then, if we can formulate succinct (often mathematical) explanations of these systems as we come to understand them, and clearly share them... that's the epitome of science! Further, the personal and communal growth offered by scientific work is just ineffable.
 
 My degree in Chemistry is ACS-certified, _i.e._, I am trained in all the subfields, but with an emphasis on physical chemistry and mathematics (through the corresponding minor). My undergraduate research has largely centered on physical–analytical work:
 
