@@ -2,16 +2,16 @@
 layout: about
 title: about
 permalink: /
-subtitle: B.S. Chemistry · Shippensburg University · Class of 2026
+subtitle: PhD student @ UC San Diego
 
 profile:
   align: right
   image: prof_pic.jpg
   image_circular: false # crops the image to make it circular
   more_info: >
-    <p>Shippensburg University</p>
-    <p>1871 Old Main Drive</p>
-    <p>Shippensburg, Pennsylvania 17257</p>
+    <p>University of California San Diego</p>
+    <p>9500 Gilman Drive</p>
+    <p>La Jolla, California 92093</p>
 
 selected_papers: false # includes a list of papers marked as "selected={true}"
 social: true # includes social icons at the bottom of the page

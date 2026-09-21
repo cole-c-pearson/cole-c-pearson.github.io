@@ -16,5 +16,3 @@ stars: 5
 goodreads_review: 7026426847
 status: Finished
 ---
-
-Review is forthcoming!
