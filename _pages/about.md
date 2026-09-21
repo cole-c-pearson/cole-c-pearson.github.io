@@ -2,7 +2,7 @@
 layout: about
 title: about
 permalink: /
-subtitle: Ph.D. Student · Biochemistry and Molecular Biophysics · University of California San Diego
+subtitle: Ph.D. Student · Biochemistry and Molecular Biophysics · UC San Diego
 
 profile:
   align: right
