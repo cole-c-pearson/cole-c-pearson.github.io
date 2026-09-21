@@ -27,7 +27,7 @@ latest_posts:
   limit: 3 # leave blank to include all the blog posts
 ---
 
-My name is Cole Pearson. I am a student–scientist born and raised Shippensburg, Pennsylvania, and currently pursuing my Ph.D. in Biochemistry and Molecular Biophysics at UC San Diego. I graduated with my B.S. in Chemistry (with a Math minor!) from Shippensburg University in May, 2026.
+My name is Cole Pearson. I am a student–scientist born and raised in Shippensburg, Pennsylvania, and currently pursuing my Ph.D. in Biochemistry and Molecular Biophysics at UC San Diego. I graduated with my B.S. in Chemistry (with a Math minor!) from Shippensburg University in May, 2026.
 
 My academic interests lie in physical biochemistry, or as a friend put it—"everything". At the fundamental physical and chemical level, biological systems are just extraordinary. How these particles find it in them to mosey out of bed each morning, coordinate their efforts, absorb blasts of energy and shoot other blasts out, get trucked around in some dark fluid, and through all of it—dance together such that they may compose the chorus of motion that is me as I write this, and you as you read this.
 
