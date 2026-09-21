@@ -23,6 +23,7 @@ display_categories: [applications, guides, explainers]
 {% assign categorized = sorted_resources | where: "category", category %}
 {% if categorized.size > 0 %}
 <a id="{{ category }}" href=".#{{ category }}">
+
 <h2 class="category">{{ category }}</h2>
 </a>
 <ul class="post-list">
@@ -42,6 +43,7 @@ display_categories: [applications, guides, explainers]
 {% endfor %}
 {% if uncategorized.size > 0 %}
 <a id="other" href=".#other">
+
 <h2 class="category">other</h2>
 </a>
 <ul class="post-list">
