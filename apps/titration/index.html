@@ -1,0 +1,1227 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <!--ARTIFACT-START-->
+    <title>Multi-Acid Titration Fitter</title>
+    <meta name="claude:viewport-fit-sides" content="cover" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Familjen+Grotesk:wght@500;700&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap"
+    />
+    <style>
+      /* Layout: instrument panel. Controls column on the left, stacked plots + results on the right; one column on phones. */
+      :root {
+        --bg: #f3f6f6;
+        --panel: #ffffff;
+        --ink: #10201f;
+        --ink-2: #485958;
+        --muted: #6f807e;
+        --line: #d7e0df;
+        --grid: #e8eeed;
+        --accent: #b5166b; /* phenolphthalein pink */
+        --accent-soft: #f8e4ef;
+        --warn: #8a4f00;
+        --warn-bg: #fff3df;
+        --s1: #2a78d6;
+        --s2: #eb6834;
+        --s3: #1baf7a;
+        --s4: #eda100;
+        --s5: #6250d6;
+        --s6: #e34948;
+        --s7: #008300;
+        --font-display: "Familjen Grotesk", "Helvetica Neue", Arial, sans-serif;
+        --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+        --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --bg: #0e1514;
+          --panel: #152120;
+          --ink: #e6eeed;
+          --ink-2: #a8b9b7;
+          --muted: #7f918f;
+          --line: #2a3a38;
+          --grid: #1e2b29;
+          --accent: #f06aae;
+          --accent-soft: #3b1a2c;
+          --warn: #f2b65e;
+          --warn-bg: #33270f;
+          --s1: #3987e5;
+          --s2: #d95926;
+          --s3: #199e70;
+          --s4: #c98500;
+          --s5: #9085e9;
+          --s6: #e66767;
+          --s7: #008300;
+          color-scheme: dark;
+        }
+      }
+      :root[data-theme="dark"] {
+        --bg: #0e1514;
+        --panel: #152120;
+        --ink: #e6eeed;
+        --ink-2: #a8b9b7;
+        --muted: #7f918f;
+        --line: #2a3a38;
+        --grid: #1e2b29;
+        --accent: #f06aae;
+        --accent-soft: #3b1a2c;
+        --warn: #f2b65e;
+        --warn-bg: #33270f;
+        --s1: #3987e5;
+        --s2: #d95926;
+        --s3: #199e70;
+        --s4: #c98500;
+        --s5: #9085e9;
+        --s6: #e66767;
+        --s7: #008300;
+        color-scheme: dark;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: var(--font-body);
+        font-size: 15px;
+        line-height: 1.5;
+      }
+      .wrap {
+        max-width: 1240px;
+        margin: 0 auto;
+        padding-block: 28px 48px;
+        padding-left: max(16px, env(safe-area-inset-left, 0px));
+        padding-right: max(16px, env(safe-area-inset-right, 0px));
+        display: grid;
+        gap: 24px;
+      }
+      header {
+        display: grid;
+        gap: 6px;
+      }
+      .eyebrow {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--accent);
+      }
+      h1 {
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: clamp(28px, 4vw, 40px);
+        line-height: 1.05;
+        margin: 0;
+        text-wrap: balance;
+      }
+      header p {
+        margin: 0;
+        max-width: 68ch;
+        color: var(--ink-2);
+      }
+      h2 {
+        font-family: var(--font-display);
+        font-weight: 500;
+        font-size: 18px;
+        margin: 0;
+      }
+      .label {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.07em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: minmax(300px, 400px) minmax(0, 1fr);
+        gap: 24px;
+        align-items: start;
+      }
+      @media (max-width: 880px) {
+        .grid {
+          grid-template-columns: minmax(0, 1fr);
+        }
+      }
+      .col {
+        display: grid;
+        gap: 16px;
+        min-width: 0;
+      }
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        padding: 16px;
+        display: grid;
+        gap: 12px;
+        min-width: 0;
+      }
+      .row2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .field {
+        display: grid;
+        gap: 4px;
+      }
+      input,
+      select,
+      textarea,
+      button {
+        font: inherit;
+        color: var(--ink);
+      }
+      input[type="number"],
+      input[type="text"],
+      select,
+      textarea {
+        width: 100%;
+        background: var(--bg);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 6px 8px;
+        font-family: var(--font-mono);
+        font-size: 13px;
+        font-variant-numeric: tabular-nums;
+      }
+      input[readonly] {
+        color: var(--accent);
+        font-weight: 600;
+        background: var(--accent-soft);
+        border-color: transparent;
+      }
+      textarea {
+        min-height: 150px;
+        resize: vertical;
+        line-height: 1.45;
+      }
+      :focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 1px;
+      }
+      button {
+        cursor: pointer;
+        border-radius: 4px;
+        border: 1px solid var(--line);
+        background: var(--panel);
+        padding: 6px 10px;
+        font-size: 13px;
+      }
+      button:hover {
+        border-color: var(--ink-2);
+      }
+      button.primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--panel);
+        font-weight: 700;
+      }
+      .btns {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        align-items: center;
+      }
+      .acid {
+        display: grid;
+        grid-template-columns: 10px minmax(0, 1fr) 92px auto auto;
+        gap: 8px;
+        align-items: center;
+        padding-block: 8px;
+        border-top: 1px solid var(--line);
+      }
+      .acid:first-of-type {
+        border-top: 0;
+      }
+      .swatch {
+        width: 10px;
+        height: 10px;
+        border-radius: 2px;
+      }
+      .acid .name {
+        display: grid;
+        gap: 2px;
+        min-width: 0;
+      }
+      .acid .name input {
+        padding: 3px 6px;
+        font-size: 12px;
+      }
+      .acid .name input.nm {
+        font-family: var(--font-body);
+        font-size: 14px;
+        font-weight: 700;
+        background: transparent;
+        border-color: transparent;
+        padding-left: 0;
+      }
+      .acid .name input.nm:hover,
+      .acid .name input.nm:focus {
+        border-color: var(--line);
+        padding-left: 6px;
+      }
+      .acid label.fit {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+        font-size: 12px;
+        color: var(--ink-2);
+        cursor: pointer;
+      }
+      .acid .x {
+        border: 0;
+        background: transparent;
+        color: var(--muted);
+        font-size: 18px;
+        line-height: 1;
+        padding: 2px 4px;
+      }
+      .hint {
+        font-size: 13px;
+        color: var(--muted);
+        margin: 0;
+      }
+      .note {
+        background: var(--warn-bg);
+        color: var(--warn);
+        border-radius: 4px;
+        padding: 8px 10px;
+        font-size: 13px;
+      }
+      .chart {
+        position: relative;
+        min-width: 0;
+      }
+      .chart svg {
+        display: block;
+        width: 100%;
+        overflow: visible;
+      }
+      .chart text {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        fill: var(--muted);
+      }
+      .tip {
+        position: absolute;
+        pointer-events: none;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        padding: 6px 8px;
+        font-family: var(--font-mono);
+        font-size: 12px;
+        color: var(--ink);
+        box-shadow: 0 4px 14px rgb(0 0 0 / 0.12);
+        white-space: nowrap;
+        z-index: 2;
+      }
+      .tip .k {
+        color: var(--muted);
+      }
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px 16px;
+        font-size: 13px;
+        color: var(--ink-2);
+      }
+      .legend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .legend i {
+        display: inline-block;
+        width: 14px;
+        height: 3px;
+        border-radius: 2px;
+      }
+      .legend i.dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        border: 1.5px solid var(--ink);
+        background: transparent;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 12px;
+      }
+      .stat {
+        display: grid;
+        gap: 2px;
+      }
+      .stat b {
+        font-family: var(--font-display);
+        font-size: 24px;
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+      }
+      .stat small {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      .tablewrap {
+        overflow-x: auto;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-variant-numeric: tabular-nums;
+        font-size: 14px;
+      }
+      th,
+      td {
+        text-align: right;
+        padding: 6px 10px;
+        border-bottom: 1px solid var(--line);
+        white-space: nowrap;
+      }
+      th:first-child,
+      td:first-child {
+        text-align: left;
+      }
+      th {
+        font-family: var(--font-mono);
+        font-weight: 400;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      td.mono {
+        font-family: var(--font-mono);
+        font-size: 13px;
+      }
+      .pill {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        padding: 1px 6px;
+        border-radius: 10px;
+        background: var(--accent-soft);
+        color: var(--accent);
+      }
+      .pill.fixed {
+        background: var(--grid);
+        color: var(--ink-2);
+      }
+      .model {
+        color: var(--ink-2);
+        font-size: 14px;
+      }
+      .model p {
+        margin: 0 0 10px;
+        max-width: 72ch;
+      }
+      .eq {
+        font-family: var(--font-mono);
+        font-size: 13px;
+        color: var(--ink);
+        background: var(--bg);
+        border-radius: 4px;
+        padding: 10px 12px;
+        overflow-x: auto;
+        white-space: nowrap;
+        margin: 0 0 10px;
+      }
+      details summary {
+        cursor: pointer;
+        font-family: var(--font-display);
+        font-size: 18px;
+        font-weight: 500;
+      }
+      @media (prefers-reduced-motion: no-preference) {
+        .chart path.model-line {
+          transition: d 0.25s ease;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <span class="eyebrow">Acid–base analysis · NaOH titration</span>
+        <h1>Multi-Acid Titration Fitter</h1>
+        <p>
+          Paste a pH titration curve and pick the acids you suspect are in the sample. The fitter finds the concentration of each acid from the whole
+          curve at once, so you get the composition of a mixture, not only its total acidity.
+        </p>
+      </header>
+
+      <div class="grid">
+        <div class="col">
+          <section class="panel" aria-labelledby="h-sample">
+            <h2 id="h-sample">Sample &amp; titrant</h2>
+            <div class="row2">
+              <label class="field"
+                ><span class="label">Sample volume V₀ (mL)</span><input id="v0" type="number" step="0.01" min="0.01" value="10.00"
+              /></label>
+              <label class="field"
+                ><span class="label">NaOH conc. C<sub>b</sub> (M)</span><input id="cb" type="number" step="0.001" min="0.0001" value="0.100"
+              /></label>
+            </div>
+            <div class="row2">
+              <label class="field"
+                ><span class="label">pK<sub>w</sub></span
+                ><input id="pkw" type="number" step="0.01" value="14.00"
+              /></label>
+              <label class="field"><span class="label">Exclude pH above</span><input id="phmax" type="number" step="0.1" value="12.0" /></label>
+            </div>
+          </section>
+
+          <section class="panel" aria-labelledby="h-acids">
+            <div class="btns" style="justify-content: space-between">
+              <h2 id="h-acids">Acids in the model</h2>
+              <span class="label">conc. mM</span>
+            </div>
+            <div id="acids"></div>
+            <div class="btns">
+              <select id="addacid" aria-label="Add an acid">
+                <option value="">+ Add an acid…</option>
+              </select>
+            </div>
+            <p class="hint">
+              Checked acids are fitted. Unchecked ones are held at the concentration you type. Edit pK<sub>a</sub> values to match your ionic strength
+              or temperature.
+            </p>
+          </section>
+
+          <section class="panel" aria-labelledby="h-data">
+            <div class="btns" style="justify-content: space-between">
+              <h2 id="h-data">Titration data</h2>
+              <span id="npts" class="label"></span>
+            </div>
+            <textarea id="data" spellcheck="false" aria-label="Titration data: volume in mL and pH, one pair per line"></textarea>
+            <p class="hint">
+              One point per line: <b>volume of NaOH added (mL)</b> and <b>pH</b>, separated by a comma, tab or space. Header lines are skipped. Clear
+              the box to simulate a curve from the concentrations alone.
+            </p>
+            <div class="btns">
+              <button id="example" type="button">Load example</button>
+              <button id="clear" type="button">Clear</button>
+              <label class="btns" style="gap: 6px"
+                ><button type="button" id="filebtn">Open CSV…</button><input id="file" type="file" accept=".csv,.txt,.tsv" hidden
+              /></label>
+            </div>
+            <p id="exnote" class="hint" hidden>
+              Example data is synthetic: a kombucha-like sample of 60 mM acetic, 15 mM gluconic and 8 mM glucuronic acid, with ±0.01 pH noise. See how
+              close the fit gets.
+            </p>
+          </section>
+        </div>
+
+        <div class="col">
+          <section class="panel" aria-labelledby="h-curve">
+            <div class="btns" style="justify-content: space-between">
+              <h2 id="h-curve">Titration curve</h2>
+              <div class="legend">
+                <span><i class="dot"></i>Measured</span>
+                <span><i style="background: var(--accent)"></i>Model</span>
+              </div>
+            </div>
+            <div class="chart" id="c-curve"></div>
+            <div class="label">First derivative, dpH/dV (mL⁻¹)</div>
+            <div class="chart" id="c-deriv"></div>
+          </section>
+
+          <section class="panel" aria-labelledby="h-res">
+            <h2 id="h-res">Composition</h2>
+            <div class="stats" id="stats"></div>
+            <div id="warnings" class="col" style="gap: 8px"></div>
+            <div class="tablewrap"><table id="table"></table></div>
+          </section>
+
+          <section class="panel" aria-labelledby="h-split">
+            <div class="btns" style="justify-content: space-between">
+              <h2 id="h-split">Where the base went</h2>
+              <div class="legend" id="split-legend"></div>
+            </div>
+            <p class="hint">
+              Protons released by each acid (mmol) as NaOH is added. Steep bands show which acid is buffering at that point in the titration.
+            </p>
+            <div class="chart" id="c-split"></div>
+          </section>
+
+          <section class="panel model">
+            <details>
+              <summary>How the fit works</summary>
+              <p style="margin-top: 10px">
+                Each acid i with total concentration C<sub>i</sub> releases on average n̄<sub>i</sub>(h) protons at hydrogen-ion concentration h,
+                computed from its pK<sub>a</sub> values. Charge balance after adding V mL of NaOH to V₀ mL of sample is:
+              </p>
+              <div class="eq">h + C<sub>b</sub>V/(V₀+V) = K<sub>w</sub>/h + Σ<sub>i</sub> C<sub>i</sub>V₀/(V₀+V) · n̄<sub>i</sub>(h)</div>
+              <p>Rearranged, every measured point (V, pH) gives one equation that is linear in the unknown concentrations:</p>
+              <div class="eq">
+                Σ<sub>i</sub> C<sub>i</sub> n̄<sub>i</sub>(h) = [ V(C<sub>b</sub> + h − K<sub>w</sub>/h) + V₀(h − K<sub>w</sub>/h) ] / V₀
+              </div>
+              <p>
+                The fitter solves this system by non-negative weighted least squares. Each point is weighted by how much a 0.01 pH or 0.02 mL reading
+                error moves it, so points near the equivalence point, where volume is known precisely, count for more than points on the flat alkaline
+                tail. Uncertainties are standard errors scaled by the reduced χ².
+              </p>
+              <p>
+                Activities are taken as 1, so the pK<sub>a</sub> values act as apparent constants at your ionic strength. Two acids with nearly the
+                same pK<sub>a</sub> produce the same curve shape, and a titration alone cannot separate them. The fitter warns you when that happens.
+              </p>
+            </details>
+          </section>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      (() => {
+        const LIB = [
+          { id: "acetic", name: "Acetic acid", pka: [4.76], mw: 60.05 },
+          { id: "gluconic", name: "Gluconic acid", pka: [3.86], mw: 196.16 },
+          { id: "glucuronic", name: "Glucuronic acid", pka: [3.18], mw: 194.14 },
+          { id: "lactic", name: "Lactic acid", pka: [3.86], mw: 90.08 },
+          { id: "malic", name: "Malic acid", pka: [3.4, 5.2], mw: 134.09 },
+          { id: "citric", name: "Citric acid", pka: [3.13, 4.76, 6.4], mw: 192.12 },
+          { id: "succinic", name: "Succinic acid", pka: [4.21, 5.64], mw: 118.09 },
+          { id: "tartaric", name: "Tartaric acid", pka: [2.98, 4.34], mw: 150.09 },
+          { id: "oxalic", name: "Oxalic acid", pka: [1.25, 4.27], mw: 90.03 },
+          { id: "formic", name: "Formic acid", pka: [3.75], mw: 46.03 },
+          { id: "phosphoric", name: "Phosphoric acid", pka: [2.15, 7.2, 12.35], mw: 97.99 },
+          { id: "carbonic", name: "Carbonic acid (CO₂)", pka: [6.35, 10.33], mw: 62.03 },
+          { id: "strong", name: "Strong acid (HCl)", pka: [-7], mw: 36.46 },
+          { id: "custom", name: "Custom acid", pka: [5.0], mw: 100 },
+        ];
+        const SLOTS = 7;
+        const ACETIC_MW = 60.05;
+        const SIG_PH = 0.01;
+        const SIG_V = 0.02;
+        const $ = (id) => document.getElementById(id);
+        const STORE = "titration-fitter-v1";
+
+        let rows = [];
+        let isExample = false;
+
+        // ---------- chemistry ----------
+        function nbar(pka, h) {
+          let term = 1;
+          let sum = 1;
+          let wsum = 0;
+          for (let j = 0; j < pka.length; j++) {
+            term *= Math.pow(10, -pka[j]) / h;
+            sum += term;
+            wsum += (j + 1) * term;
+          }
+          return wsum / sum;
+        }
+        function params() {
+          return {
+            v0: Math.max(1e-6, +$("v0").value || 0),
+            cb: Math.max(1e-9, +$("cb").value || 0),
+            kw: Math.pow(10, -(+$("pkw").value || 14)),
+            phmax: +$("phmax").value || 14,
+          };
+        }
+        // conc: array of mol/L aligned with rows
+        function solvePH(V, conc, P) {
+          const dil = P.v0 / (P.v0 + V);
+          const na = (P.cb * V) / (P.v0 + V);
+          let lo = -16;
+          let hi = 2;
+          for (let it = 0; it < 64; it++) {
+            const mid = (lo + hi) / 2;
+            const h = Math.pow(10, mid);
+            let f = h + na - P.kw / h;
+            for (let i = 0; i < rows.length; i++) if (conc[i] > 0) f -= conc[i] * dil * nbar(rows[i].pka, h);
+            if (f > 0) hi = mid;
+            else lo = mid;
+          }
+          return -(lo + hi) / 2;
+        }
+
+        // Solve A x = b (small, dense). Returns null if singular.
+        function solve(A, b) {
+          const n = b.length;
+          const M = A.map((r, i) => [...r, b[i]]);
+          let scale = 0;
+          for (let i = 0; i < n; i++) scale = Math.max(scale, Math.abs(A[i][i]));
+          for (let c = 0; c < n; c++) {
+            let p = c;
+            for (let r = c + 1; r < n; r++) if (Math.abs(M[r][c]) > Math.abs(M[p][c])) p = r;
+            if (Math.abs(M[p][c]) < 1e-11 * (scale || 1)) return null;
+            [M[c], M[p]] = [M[p], M[c]];
+            for (let r = 0; r < n; r++) {
+              if (r === c) continue;
+              const f = M[r][c] / M[c][c];
+              for (let k = c; k <= n; k++) M[r][k] -= f * M[c][k];
+            }
+          }
+          return M.map((r, i) => r[n] / r[i]);
+        }
+        function inverse(A) {
+          const n = A.length;
+          const cols = [];
+          for (let j = 0; j < n; j++) {
+            const e = Array.from({ length: n }, (_, i) => (i === j ? 1 : 0));
+            const c = solve(A, e);
+            if (!c) return null;
+            cols.push(c);
+          }
+          return A.map((_, i) => cols.map((c) => c[i]));
+        }
+
+        // Non-negative weighted least squares by exhaustive active-set search (p is small).
+        function nnls(X, y, w) {
+          const p = X[0] ? X[0].length : 0;
+          let best = { rss: Infinity, coef: new Array(p).fill(0), active: [] };
+          const limit = 1 << Math.min(p, 12);
+          for (let mask = 0; mask < limit; mask++) {
+            const act = [];
+            for (let j = 0; j < p; j++) if (mask & (1 << j)) act.push(j);
+            let coef = new Array(p).fill(0);
+            if (act.length) {
+              const A = act.map(() => new Array(act.length).fill(0));
+              const b = new Array(act.length).fill(0);
+              for (let k = 0; k < y.length; k++) {
+                for (let a = 0; a < act.length; a++) {
+                  b[a] += w[k] * X[k][act[a]] * y[k];
+                  for (let c = 0; c < act.length; c++) A[a][c] += w[k] * X[k][act[a]] * X[k][act[c]];
+                }
+              }
+              const s = solve(A, b);
+              if (!s || s.some((v) => v < 0)) continue;
+              act.forEach((j, a) => (coef[j] = s[a]));
+            }
+            let rss = 0;
+            for (let k = 0; k < y.length; k++) {
+              let r = y[k];
+              for (let j = 0; j < p; j++) r -= X[k][j] * coef[j];
+              rss += w[k] * r * r;
+            }
+            if (rss < best.rss - 1e-18) best = { rss, coef, active: act };
+          }
+          return best;
+        }
+
+        function fit(data, P) {
+          const conc = rows.map((r) => (r.fit ? 0 : Math.max(0, r.mM) / 1000));
+          const fitIdx = rows.map((r, i) => (r.fit ? i : -1)).filter((i) => i >= 0);
+          const pts = data.filter((d) => d.ph <= P.phmax);
+          if (!pts.length || !fitIdx.length) return { conc, se: conc.map(() => null), pts, fitIdx, corr: null };
+
+          const rowOf = (ph, V) => {
+            const h = Math.pow(10, -ph);
+            const d = h - P.kw / h;
+            let y = (V * (P.cb + d) + P.v0 * d) / P.v0;
+            rows.forEach((r, i) => {
+              if (!r.fit) y -= conc[i] * nbar(r.pka, h);
+            });
+            return { y, x: fitIdx.map((i) => nbar(rows[i].pka, h)) };
+          };
+          const X = [];
+          const Y = [];
+          pts.forEach((p) => {
+            const r = rowOf(p.ph, p.v);
+            X.push(r.x);
+            Y.push(r.y);
+          });
+
+          // Pass 1 unweighted, then reweight by the propagated measurement error of each residual.
+          let w = Y.map(() => 1);
+          let res = nnls(X, Y, w);
+          for (let pass = 0; pass < 2; pass++) {
+            w = pts.map((p) => {
+              const resid = (ph) => {
+                const r = rowOf(ph, p.v);
+                return r.y - r.x.reduce((s, x, j) => s + x * res.coef[j], 0);
+              };
+              const dph = (resid(p.ph + 1e-3) - resid(p.ph - 1e-3)) / 2e-3;
+              const h = Math.pow(10, -p.ph);
+              const dv = (P.cb + h - P.kw / h) / P.v0;
+              const v = (dph * SIG_PH) ** 2 + (dv * SIG_V) ** 2;
+              return 1 / Math.max(v, 1e-20);
+            });
+            res = nnls(X, Y, w);
+          }
+
+          fitIdx.forEach((i, j) => (conc[i] = res.coef[j]));
+          const se = conc.map(() => null);
+          const dof = pts.length - res.active.length;
+          const chi2 = dof > 0 ? res.rss / dof : 1;
+          if (res.active.length) {
+            const A = res.active.map((a) => res.active.map((c) => X.reduce((s, x, k) => s + w[k] * x[a] * x[c], 0)));
+            const inv = inverse(A);
+            if (inv) res.active.forEach((j, a) => (se[fitIdx[j]] = Math.sqrt(Math.max(0, inv[a][a] * Math.max(chi2, 1e-12)))));
+          }
+          // Column similarity (cosine) flags acids the curve cannot tell apart.
+          const corr = [];
+          for (let a = 0; a < fitIdx.length; a++)
+            for (let b = a + 1; b < fitIdx.length; b++) {
+              let ab = 0;
+              let aa = 0;
+              let bb = 0;
+              X.forEach((x, k) => {
+                const xa = x[a] - X.reduce((s, z) => s + z[a], 0) / X.length;
+                const xb = x[b] - X.reduce((s, z) => s + z[b], 0) / X.length;
+                ab += w[k] * xa * xb;
+                aa += w[k] * xa * xa;
+                bb += w[k] * xb * xb;
+              });
+              const c = aa > 0 && bb > 0 ? ab / Math.sqrt(aa * bb) : 1;
+              if (c > 0.995) corr.push([fitIdx[a], fitIdx[b], c]);
+            }
+          return { conc, se, pts, fitIdx, corr, chi2 };
+        }
+
+        // ---------- data ----------
+        function parse(text) {
+          const out = [];
+          text.split(/\r?\n/).forEach((line) => {
+            const nums = line
+              .trim()
+              .split(/[\s,;]+/)
+              .map(Number);
+            if (nums.length >= 2 && nums.every((n) => Number.isFinite(n))) out.push({ v: nums[0], ph: nums[1] });
+          });
+          return out.sort((a, b) => a.v - b.v);
+        }
+        function exampleData() {
+          let seed = 7;
+          const rnd = () => ((seed = (seed * 16807) % 2147483647) - 1) / 2147483646;
+          const gauss = () => Math.sqrt(-2 * Math.log(rnd() || 1e-9)) * Math.cos(2 * Math.PI * rnd());
+          const truth = { acetic: 0.06, gluconic: 0.015, glucuronic: 0.008 };
+          const P = { v0: 10, cb: 0.1, kw: 1e-14 };
+          const saved = rows;
+          rows = Object.keys(truth).map((id) => ({ pka: LIB.find((l) => l.id === id).pka }));
+          const conc = Object.values(truth);
+          const lines = ["V_NaOH_mL, pH"];
+          for (let V = 0; V <= 12.001; V += V > 7.5 && V < 9 ? 0.1 : 0.25) {
+            const ph = solvePH(V, conc, P) + SIG_PH * gauss();
+            lines.push(`${V.toFixed(2)}, ${ph.toFixed(3)}`);
+          }
+          rows = saved;
+          return lines.join("\n");
+        }
+
+        // ---------- acid rows ----------
+        function nextColor() {
+          const used = new Set(rows.map((r) => r.color));
+          for (let s = 1; s <= SLOTS; s++) if (!used.has(s)) return s;
+          return ((rows.length % SLOTS) + 1) | 0;
+        }
+        function addAcid(id, mM = 10, fitIt = true) {
+          const l = LIB.find((x) => x.id === id);
+          if (!l) return;
+          rows.push({ name: l.name, pka: [...l.pka], mw: l.mw, mM, fit: fitIt, color: nextColor() });
+        }
+        function renderAcids() {
+          const box = $("acids");
+          box.innerHTML = "";
+          rows.forEach((r, i) => {
+            const el = document.createElement("div");
+            el.className = "acid";
+            el.innerHTML = `
+              <span class="swatch" style="background:var(--s${r.color})"></span>
+              <div class="name">
+                <input class="nm" type="text" id="nm${i}" aria-label="Acid name" value="${r.name.replace(/"/g, "&quot;")}">
+                <input type="text" id="pk${i}" aria-label="pKa values, comma separated" value="${r.pka.join(", ")}" title="pKa values, comma separated">
+              </div>
+              <input type="number" id="c${i}" aria-label="Concentration in mM" step="0.1" min="0" value="${r.mM.toFixed(2)}">
+              <label class="fit"><input type="checkbox" id="f${i}" ${r.fit ? "checked" : ""}>Fit</label>
+              <button class="x" type="button" aria-label="Remove ${r.name}">×</button>`;
+            el.querySelector(".nm").addEventListener("input", (e) => {
+              r.name = e.target.value;
+              update();
+            });
+            el.querySelector(`#pk${i}`).addEventListener("input", (e) => {
+              const v = e.target.value
+                .split(/[,\s]+/)
+                .map(Number)
+                .filter((n) => Number.isFinite(n) && e.target.value.trim() !== "");
+              if (v.length) {
+                r.pka = v.sort((a, b) => a - b);
+                update();
+              }
+            });
+            el.querySelector(`#c${i}`).addEventListener("input", (e) => {
+              r.mM = Math.max(0, +e.target.value || 0);
+              update();
+            });
+            el.querySelector(`#f${i}`).addEventListener("change", (e) => {
+              r.fit = e.target.checked;
+              renderAcids();
+              update();
+            });
+            el.querySelector(".x").addEventListener("click", () => {
+              rows.splice(i, 1);
+              renderAcids();
+              update();
+            });
+            box.appendChild(el);
+          });
+        }
+
+        // ---------- charts ----------
+        const NS = "http://www.w3.org/2000/svg";
+        const fmt = (v, d = 2) => (Number.isFinite(v) ? v.toFixed(d) : "–");
+        function niceTicks(lo, hi, n = 5) {
+          const span = hi - lo || 1;
+          const step0 = span / n;
+          const mag = Math.pow(10, Math.floor(Math.log10(step0)));
+          const step = [1, 2, 2.5, 5, 10].map((m) => m * mag).find((s) => span / s <= n) || 10 * mag;
+          const t = [];
+          for (let v = Math.ceil(lo / step) * step; v <= hi + 1e-9; v += step) t.push(+v.toFixed(10));
+          return t;
+        }
+        function frame(host, height, xd, yd, xl, yl) {
+          host.innerHTML = "";
+          const W = Math.max(280, host.clientWidth);
+          const m = { l: 44, r: 12, t: 10, b: xl ? 36 : 22 };
+          const svg = document.createElementNS(NS, "svg");
+          svg.setAttribute("viewBox", `0 0 ${W} ${height}`);
+          svg.setAttribute("height", height);
+          const x = (v) => m.l + ((v - xd[0]) / (xd[1] - xd[0])) * (W - m.l - m.r);
+          const y = (v) => height - m.b - ((v - yd[0]) / (yd[1] - yd[0])) * (height - m.t - m.b);
+          let g = "";
+          niceTicks(yd[0], yd[1], 5).forEach((t) => {
+            g += `<line x1="${m.l}" x2="${W - m.r}" y1="${y(t)}" y2="${y(t)}" stroke="var(--grid)" stroke-width="1"/>`;
+            g += `<text x="${m.l - 6}" y="${y(t) + 4}" text-anchor="end">${+t.toFixed(3)}</text>`;
+          });
+          niceTicks(xd[0], xd[1], Math.max(3, Math.floor(W / 80))).forEach((t) => {
+            g += `<text x="${x(t)}" y="${height - m.b + 15}" text-anchor="middle">${+t.toFixed(3)}</text>`;
+          });
+          g += `<line x1="${m.l}" x2="${W - m.r}" y1="${height - m.b}" y2="${height - m.b}" stroke="var(--line)" stroke-width="1"/>`;
+          if (xl) g += `<text x="${(m.l + W - m.r) / 2}" y="${height - 4}" text-anchor="middle">${xl}</text>`;
+          if (yl) g += `<text x="${m.l - 6}" y="${m.t - 0}" text-anchor="end" dy="-2">${yl}</text>`;
+          svg.innerHTML = g;
+          host.appendChild(svg);
+          return { svg, x, y, W, H: height, m };
+        }
+        const pathOf = (pts, x, y) =>
+          pts
+            .filter((p) => Number.isFinite(p[1]))
+            .map((p, i) => `${i ? "L" : "M"}${x(p[0]).toFixed(1)},${y(p[1]).toFixed(1)}`)
+            .join("");
+        function add(svg, html) {
+          svg.insertAdjacentHTML("beforeend", html);
+        }
+        function hover(host, f, xd, onMove) {
+          const tip = document.createElement("div");
+          tip.className = "tip";
+          tip.hidden = true;
+          host.appendChild(tip);
+          const line = document.createElementNS(NS, "line");
+          line.setAttribute("stroke", "var(--muted)");
+          line.setAttribute("stroke-dasharray", "3 3");
+          line.setAttribute("y1", f.m.t);
+          line.setAttribute("y2", f.H - f.m.b);
+          line.style.display = "none";
+          f.svg.appendChild(line);
+          const move = (ev) => {
+            const rect = f.svg.getBoundingClientRect();
+            const px = ((ev.clientX - rect.left) / rect.width) * f.W;
+            if (px < f.m.l || px > f.W - f.m.r) return leave();
+            const v = xd[0] + ((px - f.m.l) / (f.W - f.m.l - f.m.r)) * (xd[1] - xd[0]);
+            const html = onMove(v);
+            if (!html) return leave();
+            line.setAttribute("x1", px);
+            line.setAttribute("x2", px);
+            line.style.display = "";
+            tip.innerHTML = html;
+            tip.hidden = false;
+            const left = (px / f.W) * rect.width;
+            tip.style.left = Math.min(left + 12, rect.width - tip.offsetWidth - 4) + "px";
+            tip.style.top = "8px";
+            if (left + 12 + tip.offsetWidth > rect.width) tip.style.left = Math.max(0, left - tip.offsetWidth - 12) + "px";
+          };
+          const leave = () => {
+            tip.hidden = true;
+            line.style.display = "none";
+          };
+          f.svg.addEventListener("pointermove", move);
+          f.svg.addEventListener("pointerleave", leave);
+        }
+
+        let last = null;
+        function draw() {
+          if (!last) return;
+          const { data, model, deriv, split, eqs, conc } = last;
+          const vmax = model[model.length - 1][0];
+
+          // Titration curve
+          const fc = frame($("c-curve"), 300, [0, vmax], [0, 14], "V NaOH added (mL)", "pH");
+          eqs.forEach((e) => {
+            add(
+              fc.svg,
+              `<line x1="${fc.x(e.v)}" x2="${fc.x(e.v)}" y1="${fc.m.t}" y2="${fc.H - fc.m.b}" stroke="var(--accent)" stroke-opacity=".35" stroke-dasharray="2 4"/>` +
+                `<text x="${fc.x(e.v) + 5}" y="${fc.m.t + 12}" style="fill:var(--accent)">V<tspan font-size="9" dy="2">eq</tspan><tspan dy="-2"> ${fmt(e.v)} mL</tspan></text>`
+            );
+          });
+          add(
+            fc.svg,
+            `<path class="model-line" d="${pathOf(model, fc.x, fc.y)}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>`
+          );
+          add(
+            fc.svg,
+            data
+              .map(
+                (p) =>
+                  `<circle cx="${fc.x(p.v)}" cy="${fc.y(Math.min(14, Math.max(0, p.ph)))}" r="3.2" fill="var(--panel)" stroke="var(--ink)" stroke-width="1.4" ${p.ph > params().phmax ? 'stroke-opacity=".3"' : ""}/>`
+              )
+              .join("")
+          );
+          hover($("c-curve"), fc, [0, vmax], (v) => {
+            const mi = model.reduce((b, p, i) => (Math.abs(p[0] - v) < Math.abs(model[b][0] - v) ? i : b), 0);
+            let s = `<div><span class="k">V</span> ${fmt(model[mi][0])} mL</div><div><span class="k">model pH</span> ${fmt(model[mi][1])}</div>`;
+            if (data.length) {
+              const d = data.reduce((b, p) => (Math.abs(p.v - v) < Math.abs(b.v - v) ? p : b), data[0]);
+              s += `<div><span class="k">measured</span> ${fmt(d.ph)} @ ${fmt(d.v)} mL</div>`;
+            }
+            return s;
+          });
+
+          // Derivative
+          const dd = [];
+          for (let i = 1; i < data.length; i++) {
+            const dv = data[i].v - data[i - 1].v;
+            if (dv > 1e-9) dd.push([(data[i].v + data[i - 1].v) / 2, (data[i].ph - data[i - 1].ph) / dv]);
+          }
+          const dmax = Math.max(1, ...deriv.map((p) => p[1]), ...dd.map((p) => p[1]));
+          const fd = frame($("c-deriv"), 130, [0, vmax], [0, dmax * 1.08], "", "");
+          add(fd.svg, `<path d="${pathOf(deriv, fd.x, fd.y)}" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linejoin="round"/>`);
+          add(
+            fd.svg,
+            dd
+              .map((p) => `<circle cx="${fd.x(p[0])}" cy="${fd.y(p[1])}" r="2.6" fill="var(--panel)" stroke="var(--ink)" stroke-width="1.2"/>`)
+              .join("")
+          );
+
+          // Stacked contributions
+          const tot = split.map((s) => s.vals.reduce((a, b) => a + b, 0));
+          const smax = Math.max(1e-6, ...tot);
+          const fs = frame($("c-split"), 240, [0, vmax], [0, smax * 1.05], "V NaOH added (mL)", "mmol");
+          const base = split.map(() => 0);
+          rows.forEach((r, i) => {
+            if (!(conc[i] > 0)) return;
+            const top = split.map((s, k) => base[k] + s.vals[i]);
+            const d =
+              split.map((s, k) => `${k ? "L" : "M"}${fs.x(s.v).toFixed(1)},${fs.y(top[k]).toFixed(1)}`).join("") +
+              split
+                .map((s, k) => [s, k])
+                .reverse()
+                .map(([s, k]) => `L${fs.x(s.v).toFixed(1)},${fs.y(base[k]).toFixed(1)}`)
+                .join("") +
+              "Z";
+            add(fs.svg, `<path d="${d}" fill="var(--s${r.color})" fill-opacity=".85" stroke="var(--panel)" stroke-width="1.5"/>`);
+            top.forEach((t, k) => (base[k] = t));
+          });
+          hover($("c-split"), fs, [0, vmax], (v) => {
+            const k = split.reduce((b, s, i) => (Math.abs(s.v - v) < Math.abs(split[b].v - v) ? i : b), 0);
+            let s = `<div><span class="k">V</span> ${fmt(split[k].v)} mL</div>`;
+            rows.forEach((r, i) => {
+              if (conc[i] > 0) s += `<div><span style="color:var(--s${r.color})">■</span> ${r.name} <b>${fmt(split[k].vals[i], 3)}</b></div>`;
+            });
+            return s;
+          });
+          $("split-legend").innerHTML = rows
+            .map((r, i) => (conc[i] > 0 ? `<span><i style="background:var(--s${r.color});height:8px"></i>${r.name}</span>` : ""))
+            .join("");
+        }
+
+        // ---------- results ----------
+        function renderResults(F, data, P, rms) {
+          const { conc, se } = F;
+          const totEq = conc.reduce((s, c, i) => s + c * rows[i].pka.filter((k) => k < 9).length, 0);
+          const totM = conc.reduce((s, c) => s + c, 0);
+          const stats = [
+            ["Total acid", `${fmt(totM * 1000, 1)} mM`, "sum of all fitted acids"],
+            ["Titratable acidity", `${fmt(totEq * ACETIC_MW, 2)} g/L`, `as acetic acid · ${fmt(totEq * 1000, 1)} mEq/L`],
+            ["Fit residual", data.length ? `${fmt(rms, 3)} pH` : "–", data.length ? `RMS over ${F.pts.length} points` : "no data loaded"],
+          ];
+          $("stats").innerHTML = stats
+            .map(([k, v, s]) => `<div class="stat"><span class="label">${k}</span><b>${v}</b><small>${s}</small></div>`)
+            .join("");
+
+          let t = `<thead><tr><th>Acid</th><th>pKa</th><th>Conc. (mM)</th><th>± SE</th><th>g/L</th><th>Share</th><th></th></tr></thead><tbody>`;
+          rows.forEach((r, i) => {
+            const c = conc[i] * 1000;
+            t += `<tr><td><span class="swatch" style="display:inline-block;background:var(--s${r.color});margin-right:8px"></span>${r.name}</td>
+              <td class="mono">${r.pka.join(", ")}</td>
+              <td class="mono"><b>${fmt(c, 2)}</b></td>
+              <td class="mono">${se[i] != null ? fmt(se[i] * 1000, 2) : "–"}</td>
+              <td class="mono">${fmt(conc[i] * r.mw, 3)}</td>
+              <td class="mono">${totM > 0 ? fmt((100 * conc[i]) / totM, 0) + "%" : "–"}</td>
+              <td>${r.fit ? '<span class="pill">fitted</span>' : '<span class="pill fixed">fixed</span>'}</td></tr>`;
+          });
+          $("table").innerHTML = t + "</tbody>";
+
+          const warn = [];
+          (F.corr || []).forEach(([a, b]) =>
+            warn.push(
+              `<b>${rows[a].name}</b> and <b>${rows[b].name}</b> shape the curve almost identically, so this titration cannot separate them. Their combined amount is reliable; the split between them is not. Fix one of them at a known value (uncheck Fit) to resolve it.`
+            )
+          );
+          if (data.length && !rows.some((r) => r.fit)) warn.push("No acids are set to Fit. Check Fit on at least one acid to fit the data.");
+          if (data.length && F.chi2 > 9)
+            warn.push(
+              `The residuals are about ${fmt(Math.sqrt(F.chi2), 0)}× larger than the expected measurement noise. An acid may be missing from the model, or the pKa values or NaOH concentration may be off.`
+            );
+          $("warnings").innerHTML = warn.map((w) => `<div class="note">${w}</div>`).join("");
+        }
+
+        // ---------- main ----------
+        function update() {
+          const P = params();
+          const data = parse($("data").value);
+          $("npts").textContent = data.length ? `${data.length} points` : "simulation";
+          const F = fit(data, P);
+          const fitted = F.pts.length > 0;
+          rows.forEach((r, i) => {
+            const el = $("c" + i);
+            if (el) el.readOnly = r.fit && fitted;
+            if (r.fit && fitted) {
+              r.mM = F.conc[i] * 1000;
+              if (el) el.value = r.mM.toFixed(2);
+            }
+          });
+          const conc = rows.map((r, i) => (r.fit && fitted ? F.conc[i] : r.mM / 1000));
+
+          const eqTotal = conc.reduce((s, c, i) => s + c * rows[i].pka.filter((k) => k < 11).length, 0);
+          const vEq = (eqTotal * P.v0) / P.cb;
+          const vmax = Math.max(data.length ? data[data.length - 1].v : 0, vEq * 1.35, 1);
+          const N = 240;
+          const model = [];
+          for (let k = 0; k <= N; k++) {
+            const V = (vmax * k) / N;
+            model.push([V, solvePH(V, conc, P)]);
+          }
+          const deriv = [];
+          for (let k = 1; k < model.length; k++)
+            deriv.push([(model[k][0] + model[k - 1][0]) / 2, (model[k][1] - model[k - 1][1]) / (model[k][0] - model[k - 1][0])]);
+          const dpeak = Math.max(...deriv.map((d) => d[1]));
+          const eqs = [];
+          for (let k = 1; k < deriv.length - 1; k++)
+            if (deriv[k][1] > deriv[k - 1][1] && deriv[k][1] >= deriv[k + 1][1] && deriv[k][1] > 0.25 * dpeak) eqs.push({ v: deriv[k][0] });
+          const split = [];
+          for (let k = 0; k <= 120; k++) {
+            const V = (vmax * k) / 120;
+            const h = Math.pow(10, -solvePH(V, conc, P));
+            split.push({ v: V, vals: rows.map((r, i) => conc[i] * P.v0 * nbar(r.pka, h)) });
+          }
+          let rms = 0;
+          if (F.pts.length) {
+            F.pts.forEach((p) => (rms += (solvePH(p.v, conc, P) - p.ph) ** 2));
+            rms = Math.sqrt(rms / F.pts.length);
+          }
+          last = { data, model, deriv, split, eqs, conc };
+          draw();
+          renderResults({ ...F, conc }, data, P, rms);
+          save();
+        }
+
+        function save() {
+          try {
+            localStorage.setItem(
+              STORE,
+              JSON.stringify({
+                rows,
+                data: $("data").value,
+                v0: $("v0").value,
+                cb: $("cb").value,
+                pkw: $("pkw").value,
+                phmax: $("phmax").value,
+                isExample,
+              })
+            );
+          } catch (e) {}
+        }
+        function loadExample() {
+          rows = [];
+          addAcid("acetic");
+          addAcid("gluconic");
+          addAcid("glucuronic");
+          $("v0").value = "10.00";
+          $("cb").value = "0.100";
+          $("pkw").value = "14.00";
+          $("data").value = exampleData();
+          isExample = true;
+          $("exnote").hidden = false;
+          renderAcids();
+          update();
+        }
+
+        // init
+        const sel = $("addacid");
+        LIB.forEach((l) => {
+          const o = document.createElement("option");
+          o.value = l.id;
+          o.textContent = `${l.name}  (pKa ${l.pka.join(", ")})`;
+          sel.appendChild(o);
+        });
+        sel.addEventListener("change", () => {
+          if (!sel.value) return;
+          addAcid(sel.value);
+          sel.value = "";
+          renderAcids();
+          update();
+        });
+        ["v0", "cb", "pkw", "phmax"].forEach((id) => $(id).addEventListener("input", () => update()));
+        let tmr;
+        $("data").addEventListener("input", () => {
+          isExample = false;
+          $("exnote").hidden = true;
+          clearTimeout(tmr);
+          tmr = setTimeout(update, 250);
+        });
+        $("example").addEventListener("click", loadExample);
+        $("clear").addEventListener("click", () => {
+          $("data").value = "";
+          isExample = false;
+          $("exnote").hidden = true;
+          update();
+        });
+        $("filebtn").addEventListener("click", () => $("file").click());
+        $("file").addEventListener("change", (e) => {
+          const f = e.target.files[0];
+          if (!f) return;
+          const rd = new FileReader();
+          rd.onload = () => {
+            $("data").value = rd.result;
+            isExample = false;
+            $("exnote").hidden = true;
+            update();
+          };
+          rd.readAsText(f);
+        });
+        let rz;
+        window.addEventListener("resize", () => {
+          clearTimeout(rz);
+          rz = setTimeout(draw, 120);
+        });
+
+        let restored = false;
+        try {
+          const s = JSON.parse(localStorage.getItem(STORE) || "null");
+          if (s && Array.isArray(s.rows) && s.rows.length) {
+            rows = s.rows;
+            ["v0", "cb", "pkw", "phmax"].forEach((k) => s[k] != null && ($(k).value = s[k]));
+            $("data").value = s.data || "";
+            isExample = !!s.isExample;
+            $("exnote").hidden = !isExample;
+            renderAcids();
+            update();
+            restored = true;
+          }
+        } catch (e) {}
+        if (!restored) loadExample();
+      })();
+    </script>
+    <!--ARTIFACT-END-->
+  </body>
+</html>
